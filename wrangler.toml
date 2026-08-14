@@ -1,0 +1,8 @@
+name = "little-parcel"
+compatibility_date = "2026-08-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "PARCELS"
+database_name = "little-parcel-db"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"

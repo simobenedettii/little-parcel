@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Un piccolo pacco digitale da riempire di pensieri, foto, musica e sorprese.">
+  <title>Little Parcel — un piccolo pacco, tante cose belle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <header class="site-header">
+    <div class="brand"><span class="brand-mark">✦</span> Little Parcel</div>
+    <div class="header-note">made for someone special</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">A DIGITAL CARE PACKAGE</p>
+        <h1>Send a little<br><em>something lovely.</em></h1>
+        <p class="hero-text">Create a tiny parcel filled with messages, photos, songs, memories and surprises. No account. No payment. Just send the link.</p>
+        <div class="hero-actions">
+          <a href="#create" class="button button-primary">Make a parcel <span>→</span></a>
+          <button class="button button-ghost" id="demoBtn">See a demo</button>
+        </div>
+      </div>
+      <div class="hero-art" aria-label="Decorative digital parcel">
+        <div class="spark spark-a">✦</div><div class="spark spark-b">✿</div><div class="spark spark-c">·</div>
+        <div class="parcel-shadow"></div>
+        <div class="parcel">
+          <div class="parcel-lid"><span>for you</span></div>
+          <div class="parcel-ribbon vertical"></div>
+          <div class="parcel-ribbon horizontal"></div>
+          <div class="parcel-body">
+            <div class="sticker">open<br>when<br>you need<br>a smile ♡</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="create-wrap" id="create">
+      <div class="section-heading">
+        <p class="eyebrow">01 / MAKE IT YOURS</p>
+        <h2>A little parcel of <em>good things.</em></h2>
+        <p>Give it a title, add whatever feels right, then share it.</p>
+      </div>
+
+      <div class="builder-grid">
+        <div class="builder-panel">
+          <div class="field-row">
+            <label>to / <input id="recipient" maxlength="40" value="someone special" placeholder="name"></label>
+            <label>from / <input id="sender" maxlength="40" value="your bestie" placeholder="your name"></label>
+          </div>
+
+          <label class="field-label">parcel title
+            <input id="title" maxlength="60" value="A little box of good things" placeholder="Give your parcel a title">
+          </label>
+
+          <div class="items-head">
+            <div><p class="eyebrow">02 / TUCK THINGS INSIDE</p><h3>Pick your little extras</h3></div>
+            <span id="itemCount" class="count-pill">0 items</span>
+          </div>
+
+          <div class="item-picker" id="itemPicker">
+            <button class="item-type" data-type="note"><span class="icon">✎</span><b>Note</b><small>write something</small></button>
+            <button class="item-type" data-type="photo"><span class="icon">▧</span><b>Photo</b><small>share a memory</small></button>
+            <button class="item-type" data-type="song"><span class="icon">♫</span><b>Song</b><small>add a link</small></button>
+            <button class="item-type" data-type="video"><span class="icon">▶</span><b>Video</b><small>add a link</small></button>
+            <button class="item-type" data-type="voice"><span class="icon">◉</span><b>Voice</b><small>record a thought</small></button>
+            <button class="item-type" data-type="drawing"><span class="icon">✧</span><b>Drawing</b><small>make a doodle</small></button>
+            <button class="item-type" data-type="coupon"><span class="icon">⌁</span><b>Coupon</b><small>a little promise</small></button>
+            <button class="item-type" data-type="location"><span class="icon">⌖</span><b>Place</b><small>a special spot</small></button>
+          </div>
+
+          <div class="items-list" id="itemsList"></div>
+
+          <div class="builder-footer">
+            <div><strong id="footerCount">0</strong> little things inside</div>
+            <button class="button button-primary" id="shareBtn">Create share link <span>↗</span></button>
+          </div>
+        </div>
+
+        <aside class="preview-panel">
+          <div class="preview-top"><span>LIVE PREVIEW</span><span>♡</span></div>
+          <div class="mini-label">a parcel for <span id="previewTo">someone special</span></div>
+          <div class="preview-box">
+            <div class="preview-lid"></div>
+            <div class="preview-ribbon"></div>
+            <div class="preview-card">
+              <span class="mini-eyebrow">LITTLE PARCEL</span>
+              <h3 id="previewTitle">A little box of good things</h3>
+              <div class="preview-items" id="previewItems"><span>your surprises will appear here</span></div>
+              <div class="preview-from">made with care by <span id="previewFrom">your bestie</span></div>
+            </div>
+          </div>
+          <p class="preview-note">The final parcel opens like a small digital keepsake. Everything lives in the share link.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="how-section">
+      <div class="section-heading centered">
+        <p class="eyebrow">03 / KEEP IT SIMPLE</p>
+        <h2>Made to feel like a <em>real little gift.</em></h2>
+      </div>
+      <div class="steps">
+        <article><span>01</span><h3>Fill it</h3><p>Add notes, photos, links, promises or tiny surprises.</p></article>
+        <article><span>02</span><h3>Seal it</h3><p>One click turns your parcel into a private shareable link.</p></article>
+        <article><span>03</span><h3>Send it</h3><p>Text it, email it, or drop it wherever your person is.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div><strong>Little Parcel</strong><br><span>a tiny place for big feelings.</span></div>
+    <div>no accounts · no checkout · no fuss</div>
+  </footer>
+
+  <div class="modal" id="itemModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <button class="modal-close" data-close-modal aria-label="Chiudi">×</button>
+      <p class="eyebrow" id="modalEyebrow">ADD SOMETHING</p>
+      <h2 id="modalTitle">Add a note</h2>
+      <div id="modalBody"></div>
+      <div class="modal-actions"><button class="button button-ghost" data-close-modal>Annulla</button><button class="button button-primary" id="saveItemBtn">Add it <span>＋</span></button></div>
+    </div>
+  </div>
+
+  <div class="open-overlay hidden" id="openOverlay">
+    <div class="opened-bg"></div>
+    <div class="opened-wrap">
+      <button class="open-close" id="openClose">×</button>
+      <button class="sound-gate hidden" id="soundGate">Open with sound <span>♫</span></button>
+      <div class="open-heading"><p class="eyebrow">A LITTLE PARCEL FOR</p><h2 id="openedTo">someone special</h2><p id="openedFrom">from your bestie</p></div>
+      <div class="open-box" id="openedBox">
+        <div class="open-lid"><span id="openedTitleSmall">for you</span></div>
+        <div class="open-content">
+          <div class="open-card">
+            <p class="eyebrow">LITTLE PARCEL</p>
+            <h2 id="openedTitle">A little box of good things</h2>
+            <div id="openedItems" class="opened-items"></div>
+            <p class="signature">♡ made with care</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="backgroundMedia" class="background-media" aria-hidden="true"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
