@@ -149,11 +149,10 @@ function openedItemMarkup(i){
     const linkRaw=(i.link||'').trim();
     const link=linkRaw ? escapeHTML(linkRaw) : '';
     const place=extractPlaceFromLink(linkRaw);
-    const name=escapeHTML(place.name || 'A special place');
-    const mapQuery=encodeURIComponent(place.mapQuery || place.name || '');
-    body=`<div class="place-card">
-      <div class="place-map">${mapQuery ? `<iframe loading="lazy" title="Map of ${name}" src="https://www.google.com/maps?q=${mapQuery}&output=embed"></iframe><div class="map-fade"></div>` : `<div class="place-map-fallback"><span>⌖</span><p>Open the place to see it on the map.</p></div>`}</div>
-      <div class="place-info"><span class="place-kicker">A SPECIAL PLACE</span><h3>${name}</h3>${i.value?`<p class="place-description">${escapeHTML(i.value)}</p>`:''}${link?`<a class="place-open" href="${link}" target="_blank" rel="noopener noreferrer">Open in Maps <span>↗</span></a>`:''}</div>
+    const name=escapeHTML(place.name || i.value || 'A special place');
+    body=`<div class="place-card" data-place-card="1" data-place-url="${link}" data-place-name="${escapeHTML(i.value||place.name||'')}" data-map-query="${escapeHTML(place.mapQuery||'')}">
+      <div class="place-map"><div class="map-loading"><span class="map-pin">⌖</span><span>finding this place…</span></div></div>
+      <div class="place-info"><span class="place-kicker">A SPECIAL PLACE</span><h3 class="place-title">${name}</h3>${i.value?`<p class="place-description">${escapeHTML(i.value)}</p>`:''}${link?`<a class="place-open" href="${link}" target="_blank" rel="noopener noreferrer">Open in Maps <span>↗</span></a>`:''}</div>
     </div>`;
   }
   else if(i.type==='photo'||i.type==='drawing') body='<div class="standalone-media">'+(i.value.startsWith('data:image')?`<img src="${i.value}" class="opened-media" alt="">`:'')+(i.caption?'<p>'+escapeHTML(i.caption)+'</p>':'')+'</div>';
@@ -206,35 +205,10 @@ function songPlatform(url=''){
 async function fetchSongMetadata(url=''){
   const platform=songPlatform(url);
   try{
-    if(platform==='Spotify'){
-      const res=await fetch('https://open.spotify.com/oembed?url='+encodeURIComponent(url), {mode:'cors'});
-      if(!res.ok) throw new Error('Spotify metadata unavailable');
-      const d=await res.json();
-      return {title:d.title||'A song for you', artist:d.author_name||'Spotify', cover:d.thumbnail_url||'', platform};
-    }
-    if(platform==='YouTube'){
-      const res=await fetch('https://www.youtube.com/oembed?url='+encodeURIComponent(url)+'&format=json', {mode:'cors'});
-      if(!res.ok) throw new Error('YouTube metadata unavailable');
-      const d=await res.json();
-      return {title:d.title||'A song for you', artist:d.author_name||'YouTube', cover:d.thumbnail_url||'', platform};
-    }
-    if(platform==='Apple Music'){
-      const u=new URL(url); const trackId=u.searchParams.get('i');
-      if(trackId && /^\d+$/.test(trackId)){
-        const res=await fetch('https://itunes.apple.com/lookup?entity=song&id='+encodeURIComponent(trackId), {mode:'cors'});
-        if(res.ok){
-          const d=await res.json(); const x=d.results&&d.results[0];
-          if(x) return {title:x.trackName||x.collectionName||'A song for you', artist:x.artistName||'Apple Music', cover:(x.artworkUrl100||'').replace('100x100','600x600'), platform};
-        }
-      }
-      // Album/track URLs without a track id: use the readable URL slug as a final hint.
-      const parts=u.pathname.split('/').filter(Boolean); const slug=parts[parts.length-1]||'';
-      const term=decodeURIComponent(slug).replace(/-\d+$/,'').replace(/-/g,' ');
-      if(term){
-        const res=await fetch('https://itunes.apple.com/search?entity=song&limit=1&term='+encodeURIComponent(term), {mode:'cors'});
-        if(res.ok){ const d=await res.json(); const x=d.results&&d.results[0]; if(x) return {title:x.trackName||term, artist:x.artistName||'Apple Music', cover:(x.artworkUrl100||'').replace('100x100','600x600'), platform}; }
-      }
-    }
+    const res=await fetch('/api/song-meta?url='+encodeURIComponent(url), {headers:{'Accept':'application/json'}});
+    if(!res.ok) throw new Error('Metadata unavailable');
+    const d=await res.json();
+    return {title:d.title||'A song for you', artist:d.artist||'', cover:d.cover||'', platform:d.platform||platform};
   }catch{}
   return {title:'A song for you', artist:'', cover:'', platform};
 }
@@ -243,7 +217,7 @@ function applySongFallback(card){
   const title=card.querySelector('.song-title');
   const artist=card.querySelector('.song-artist');
   const platform=card.querySelector('.song-platform');
-  if(title && (!title.textContent || title.textContent==='Loading song details…')) title.textContent=card.dataset.songCaption||'A song for you';
+  if(title) title.textContent=card.dataset.songCaption||'A song for you';
   if(artist) artist.textContent='';
   if(platform) platform.textContent=songPlatform(card.dataset.songUrl);
 }
@@ -256,12 +230,12 @@ async function hydrateSongCard(card){
     const title=card.querySelector('.song-title');
     const artist=card.querySelector('.song-artist');
     const platform=card.querySelector('.song-platform');
-    if(title) title.textContent=meta.title||'A song for you';
+    if(title) title.textContent=meta.title||card.dataset.songCaption||'A song for you';
     if(artist) artist.textContent=meta.artist||'';
     if(platform) platform.textContent=meta.platform||songPlatform(url);
     if(art && meta.cover){
       art.classList.remove('song-art-placeholder');
-      art.innerHTML='<img alt="Album cover" src="'+escapeHTML(meta.cover)+'">';
+      art.innerHTML='<img alt="Album cover" src="'+escapeHTML(meta.cover)+'" referrerpolicy="no-referrer">';
     } else if(art){
       art.classList.add('song-art-placeholder');
       art.innerHTML='<span>♫</span>';
@@ -270,15 +244,55 @@ async function hydrateSongCard(card){
 }
 
 function setupBackgroundSong(){
-  // Deliberately disabled: browsers frequently block unmuted autoplay.
   backgroundController={hasSong:false,start(){},stop(){}};
   hideSoundGate();
   $('backgroundMedia').innerHTML='';
 }
 
+
+function initPlaceMap(card){
+  if(!window.L || !card || card.dataset.mapReady==='1') return;
+  const mapEl=card.querySelector('.place-map');
+  if(!mapEl) return;
+  const url=card.dataset.placeUrl||'';
+  const name=card.dataset.placeName||'';
+  const query=card.dataset.mapQuery||'';
+  fetch('/api/place-meta?url='+encodeURIComponent(url)+'&name='+encodeURIComponent(query||name),{headers:{'Accept':'application/json'}})
+    .then(r=>r.ok?r.json():Promise.reject(new Error('place lookup failed')))
+    .then(data=>{
+      if(data.lat==null || data.lon==null) throw new Error('coordinates unavailable');
+      mapEl.innerHTML='';
+      const map=L.map(mapEl,{zoomControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false,touchZoom:false,boxZoom:false,keyboard:false,attributionControl:true,preferCanvas:true});
+      L.control.zoom({position:'bottomright'}).addTo(map);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+        maxZoom:20, attribution:'&copy; OpenStreetMap &copy; CARTO'
+      }).addTo(map);
+      const marker=L.circleMarker([data.lat,data.lon],{radius:9,weight:3,color:'#fffdf7',fillColor:'#c56f61',fillOpacity:1});
+      marker.addTo(map);
+      if(data.name){ marker.bindTooltip(data.name,{direction:'top',offset:[0,-8],opacity:0.95}); }
+      map.setView([data.lat,data.lon],16,{animate:false});
+      card.dataset.mapReady='1';
+      requestAnimationFrame(()=>map.invalidateSize());
+    })
+    .catch(()=>{
+      mapEl.innerHTML='<div class="place-map-fallback"><span>⌖</span><p>The place could not be located automatically.</p></div>';
+    });
+}
+
+function hydratePlaceCards(){ document.querySelectorAll('[data-place-card]').forEach(initPlaceMap); }
+
+let revealTimers=[];
+
+function clearRevealTimers(){
+  revealTimers.forEach(clearTimeout);
+  revealTimers=[];
+}
+
 function resetOpenSequence(){
+  clearRevealTimers();
   const overlay=$('openOverlay');
   overlay.classList.remove('revealed','parcel-arrived','parcel-opened','contents-revealed');
+  document.querySelectorAll('.opened-item').forEach(el=>el.classList.remove('is-visible'));
   $('soundGate').classList.add('hidden');
   backgroundController.stop();
   $('backgroundMedia').innerHTML='';
@@ -289,9 +303,21 @@ function runOpenSequence(){
   const overlay=$('openOverlay');
   requestAnimationFrame(()=>{
     overlay.classList.add('revealed');
-    setTimeout(()=>overlay.classList.add('parcel-arrived'), 120);
-    setTimeout(()=>overlay.classList.add('parcel-opened'), 1450);
-    setTimeout(()=>overlay.classList.add('contents-revealed'), 2200);
+    revealTimers.push(setTimeout(()=>overlay.classList.add('parcel-arrived'), 120));
+    // Give the arrival a real pause before lifting the lid. This is
+    // intentionally longer on small screens so the sequence remains readable.
+    const mobile = window.matchMedia('(max-width: 620px)').matches;
+    const lidDelay = mobile ? 1900 : 1450;
+    const contentStart = mobile ? 3200 : 2400;
+    const itemStep = mobile ? 520 : 330;
+    revealTimers.push(setTimeout(()=>overlay.classList.add('parcel-opened'), lidDelay));
+    revealTimers.push(setTimeout(()=>{
+      overlay.classList.add('contents-revealed');
+      const items=[...document.querySelectorAll('.opened-item')];
+      items.forEach((item,idx)=>{
+        revealTimers.push(setTimeout(()=>item.classList.add('is-visible'), idx*itemStep));
+      });
+    }, contentStart));
   });
 }
 
@@ -303,6 +329,7 @@ function showOpened(p){
   runOpenSequence();
   setupBackgroundSong();
   document.querySelectorAll('[data-song-card]').forEach(hydrateSongCard);
+  hydratePlaceCards();
 }
 $('openClose').onclick=()=>{$('openOverlay').classList.add('hidden');resetOpenSequence(); if(location.hash.startsWith('#parcel=')) history.replaceState(null,'',location.pathname+location.search);}
 async function loadInitialParcel(){
