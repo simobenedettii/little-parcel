@@ -5,4 +5,4 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "PARCELS"
 database_name = "little-parcel-db"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "bc638a8e-23cb-4435-94ed-850f3ffefb98"
