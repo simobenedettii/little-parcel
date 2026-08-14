@@ -92,6 +92,8 @@ A parcel link is unlisted rather than password-protected. Anyone who receives th
 
 ## Current Cloudflare documentation
 
+Deploy test
+
 - https://developers.cloudflare.com/pages/functions/
 - https://developers.cloudflare.com/pages/functions/bindings/
 - https://developers.cloudflare.com/d1/platform/limits/
